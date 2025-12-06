@@ -123,6 +123,8 @@ export async function getStorageInfo(): Promise<{
     hasSessions: sessions !== null,
     hasLearnerState: learner !== null,
   };
+
+  
 }
 
 
