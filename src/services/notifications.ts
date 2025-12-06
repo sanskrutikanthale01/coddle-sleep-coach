@@ -1,14 +1,3 @@
-/**
- * Notification Service
- * 
- * Handles scheduling and managing local notifications for sleep schedule blocks.
- * Uses expo-notifications to schedule reminders for wind-down, naps, and bedtime.
- * 
- * Features:
- * - Schedule notifications for schedule blocks
- * - Cancel/reschedule when schedule changes
- * - Track notification history
- */
 
 import { ScheduleBlock } from '../types';
 import { time } from '../utils/time';
@@ -18,10 +7,9 @@ import {
   NotificationHistoryItem,
 } from '../storage/sleepStorage';
 
-// Import notifications directly (not lazy-loaded) - was working before
+
 import * as Notifications from 'expo-notifications';
 
-// Configure notification behavior (set in App.tsx, but keep here as fallback)
 let handlerSetup = false;
 export function setupNotificationHandler() {
   if (!handlerSetup) {
@@ -37,20 +25,18 @@ export function setupNotificationHandler() {
       });
       handlerSetup = true;
     } catch (error) {
-      // Silently handle handler setup errors
+     
     }
   }
 }
 
-// Re-export for convenience
+
 export type { NotificationHistoryItem } from '../storage/sleepStorage';
 
-/**
- * Request notification permissions
- */
+
 export async function requestNotificationPermissions(): Promise<boolean> {
   try {
-    setupNotificationHandler(); // Ensure handler is set up
+    setupNotificationHandler(); 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     
     let finalStatus = existingStatus;
@@ -67,9 +53,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   }
 }
 
-/**
- * Get notification message based on schedule block kind
- */
+
 function getNotificationMessage(block: ScheduleBlock): { title: string; body: string } {
   const blockTime = time.parse(block.startISO);
   const timeStr = blockTime.format('h:mm A');
@@ -98,17 +82,14 @@ function getNotificationMessage(block: ScheduleBlock): { title: string; body: st
   }
 }
 
-/**
- * Schedule a notification for a schedule block and save to history
- */
+
 export async function scheduleNotificationForBlock(
   block: ScheduleBlock
 ): Promise<string | null> {
   try {
-    setupNotificationHandler(); // Ensure handler is set up
+    setupNotificationHandler(); 
     const hasPermission = await requestNotificationPermissions();
     if (!hasPermission) {
-      // Still save to history as "canceled" (permission denied)
       await saveNotificationToHistory(block, null, 'canceled');
       return null;
     }
@@ -116,9 +97,7 @@ export async function scheduleNotificationForBlock(
     const blockTime = time.parse(block.startISO);
     const now = time.now();
 
-    // Don't schedule notifications for past times
     if (blockTime.isBefore(now)) {
-      // Save to history as "sent" (already past)
       await saveNotificationToHistory(block, null, 'sent', blockTime.toISOString());
       return null;
     }
@@ -128,7 +107,6 @@ export async function scheduleNotificationForBlock(
     const triggerDate = blockTime.toDate();
     const nowDate = new Date();
 
-    // Ensure date is in the future
     if (triggerDate <= nowDate) {
       await saveNotificationToHistory(block, null, 'canceled');
       return null;
@@ -147,23 +125,19 @@ export async function scheduleNotificationForBlock(
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: triggerDate,
-      } as any, // Type assertion to bypass strict typing
+      } as any, 
     });
 
-    // Save to history as "scheduled"
     await saveNotificationToHistory(block, notificationId, 'scheduled');
     return notificationId;
   } catch (error) {
     console.error('Error scheduling notification:', error);
-    // Save to history as "canceled" (error)
     await saveNotificationToHistory(block, null, 'canceled');
     return null;
   }
 }
 
-/**
- * Save notification to history
- */
+
 async function saveNotificationToHistory(
   block: ScheduleBlock,
   notificationId: string | null,
@@ -191,7 +165,6 @@ async function saveNotificationToHistory(
     };
 
     history.push(historyItem);
-    // Keep only last 100 items to avoid storage bloat
     const trimmedHistory = history.slice(-100);
     await saveNotificationHistory(trimmedHistory);
   } catch (error) {
@@ -199,14 +172,10 @@ async function saveNotificationToHistory(
   }
 }
 
-/**
- * Cancel a scheduled notification and update history
- */
 export async function cancelNotification(notificationId: string): Promise<void> {
   try {
     await Notifications.cancelScheduledNotificationAsync(notificationId);
     
-    // Update history to mark as canceled
     const historyResult = await loadNotificationHistory();
     const history = historyResult.value;
     const item = history.find((h) => h.notificationId === notificationId);
@@ -220,14 +189,10 @@ export async function cancelNotification(notificationId: string): Promise<void> 
   }
 }
 
-/**
- * Cancel all scheduled notifications and update history
- */
 export async function cancelAllNotifications(): Promise<void> {
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     
-    // Update history - mark all scheduled as canceled
     const historyResult = await loadNotificationHistory();
     const history = historyResult.value;
     const now = time.nowISO();
@@ -249,13 +214,9 @@ export async function cancelAllNotifications(): Promise<void> {
   }
 }
 
-/**
- * Schedule notifications for all schedule blocks
- */
 export async function scheduleNotificationsForBlocks(
   blocks: ScheduleBlock[]
 ): Promise<Map<string, string>> {
-  // Cancel all existing notifications first
   await cancelAllNotifications();
 
   const notificationMap = new Map<string, string>();
@@ -269,9 +230,6 @@ export async function scheduleNotificationsForBlocks(
   return notificationMap;
 }
 
-/**
- * Get all scheduled notifications from device
- */
 export async function getAllScheduledNotifications(): Promise<
   Notifications.NotificationRequest[]
 > {
@@ -283,9 +241,6 @@ export async function getAllScheduledNotifications(): Promise<
   }
 }
 
-/**
- * Get notification history (all notifications - scheduled, sent, canceled)
- */
 export async function getNotificationHistory(): Promise<NotificationHistoryItem[]> {
   try {
     const historyResult = await loadNotificationHistory();
@@ -296,9 +251,6 @@ export async function getNotificationHistory(): Promise<NotificationHistoryItem[
   }
 }
 
-/**
- * Mark notification as sent (when it fires)
- */
 export async function markNotificationAsSent(notificationId: string): Promise<void> {
   try {
     const historyResult = await loadNotificationHistory();
@@ -314,17 +266,12 @@ export async function markNotificationAsSent(notificationId: string): Promise<vo
   }
 }
 
-/**
- * Format notification for display
- */
 export function formatNotificationTime(
   notification: import('expo-notifications').NotificationRequest
 ): string {
   const trigger = notification.trigger;
   
-  // Handle DATE trigger type
-  if (trigger && typeof trigger === 'object') {
-    // Check for date property (could be Date object, timestamp number, or ISO string)
+    if (trigger && typeof trigger === 'object') {
     if ('date' in trigger) {
       const dateValue = (trigger as any).date;
       
@@ -332,14 +279,11 @@ export function formatNotificationTime(
         try {
           let date: Date;
           
-          // Handle different date formats
           if (dateValue instanceof Date) {
             date = dateValue;
           } else if (typeof dateValue === 'number') {
-            // Timestamp (milliseconds or seconds)
             date = new Date(dateValue > 1000000000000 ? dateValue : dateValue * 1000);
           } else if (typeof dateValue === 'string') {
-            // ISO string
             date = new Date(dateValue);
           } else {
             return 'Unknown';
@@ -349,12 +293,10 @@ export function formatNotificationTime(
             return time.parse(date.toISOString()).format('MMM D, h:mm A');
           }
         } catch (error) {
-          // Silently handle parsing errors
         }
       }
     }
     
-    // Check for seconds (for time interval triggers)
     if ('seconds' in trigger) {
       const seconds = (trigger as any).seconds;
       if (typeof seconds === 'number') {
@@ -367,9 +309,6 @@ export function formatNotificationTime(
   return 'Unknown';
 }
 
-/**
- * Get notification kind from data
- */
 export function getNotificationKind(
   notification: import('expo-notifications').NotificationRequest
 ): 'windDown' | 'nap' | 'bedtime' | 'unknown' {
@@ -377,9 +316,6 @@ export function getNotificationKind(
   return data?.kind || 'unknown';
 }
 
-/**
- * Get schedule block ID from notification
- */
 export function getScheduleBlockId(
   notification: import('expo-notifications').NotificationRequest
 ): string | null {

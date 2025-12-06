@@ -50,7 +50,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
     const endISO = time.parse(endDate.toISOString()).toISOString();
     
     if (time.parse(endISO).isBefore(time.parse(startISO))) {
-      // End time is before start time, show error
+   
       return;
     }
 

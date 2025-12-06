@@ -1,8 +1,4 @@
-/**
- * Empty State Component
- * 
- * Reusable component for displaying empty states across screens
- */
+
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';

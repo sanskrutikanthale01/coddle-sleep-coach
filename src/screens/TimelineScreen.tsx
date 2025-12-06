@@ -24,15 +24,15 @@ import { getSessionColor, getQualityColor } from '../utils/colors';
 import { useNapLengthChartData, useDaytimeSleepChartData } from '../hooks/useChartData';
 
 interface TimelineSession extends SleepSession {
-  /** Left position in pixels (0-100% of timeline width) */
+ 
   leftPercent: number;
-  /** Width in percentage (0-100%) */
+ 
   widthPercent: number;
-  /** Whether this session crosses midnight */
+ 
   isCrossMidnight: boolean;
-  /** Day key for the start of the session */
+ 
   startDayKey: string;
-  /** Day key for the end of the session */
+ 
   endDayKey: string;
 }
 
@@ -41,11 +41,11 @@ interface TimelineScreenProps {
 }
 
 export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSessionIds }) => {
-  // Use store for sessions (reactive updates) - use sessions directly and filter in component
+ 
   const allSessions = useSleepSessionsStore((state) => state.sessions);
   const loadSessions = useSleepSessionsStore((state) => state.loadSessions);
   
-  // Filter active sessions in component with useMemo to avoid infinite loops
+ 
   const sessions = React.useMemo(
     () => allSessions.filter((s) => !s.deleted),
     [allSessions]
@@ -54,7 +54,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
   const [selectedDate, setSelectedDate] = useState<string>(time.dayKey(time.nowISO()));
   const [selectedSession, setSelectedSession] = useState<SleepSession | null>(null);
 
-  // Ensure highlightSessionIds is always an array - defensive check
+ 
   const safeHighlightIds: string[] = (() => {
     if (highlightSessionIds && Array.isArray(highlightSessionIds)) {
       return highlightSessionIds;
@@ -62,15 +62,15 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
     return [];
   })();
 
-  // Load sessions on mount
+ 
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
 
-  // Auto-select date if highlightSessionIds are provided
+ 
   useEffect(() => {
     if (safeHighlightIds && Array.isArray(safeHighlightIds) && safeHighlightIds.length > 0) {
-      // Find the first highlighted session and select its date
+     
       const highlightedSession = sessions.find((s) => safeHighlightIds.includes(s.id));
       if (highlightedSession) {
         const sessionDate = time.dayKey(highlightedSession.startISO);
@@ -91,24 +91,24 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
     const sessionEndDay = time.dayKey(session.endISO);
     const isCrossMidnight = sessionStartDay !== sessionEndDay;
 
-    // Determine which part of the session to show for this day
+   
     let displayStart: Dayjs;
     let displayEnd: Dayjs;
 
     if (dayKey === sessionStartDay) {
-      // Show the part that starts on this day
+     
       displayStart = start;
       displayEnd = isCrossMidnight ? time.parse(dayKey + 'T23:59:59') : end;
     } else if (dayKey === sessionEndDay && isCrossMidnight) {
-      // Show the part that ends on this day (for cross-midnight sessions)
+     
       displayStart = time.parse(dayKey + 'T00:00:00');
       displayEnd = end;
     } else {
-      // Session doesn't belong to this day
+     
       return null;
     }
 
-    // Calculate position as percentage of day (0-100%)
+   
     const startMinutes = displayStart.hour() * 60 + displayStart.minute();
     const endMinutes = displayEnd.hour() * 60 + displayEnd.minute();
     const totalMinutesInDay = 24 * 60;
@@ -116,8 +116,8 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
     const leftPercent = (startMinutes / totalMinutesInDay) * 100;
     const widthPercent = ((endMinutes - startMinutes) / totalMinutesInDay) * 100;
 
-    // Ensure minimum width for visibility
-    const minWidthPercent = 2; // At least 2% width
+  
+    const minWidthPercent = 2; 
     const finalWidthPercent = Math.max(widthPercent, minWidthPercent);
 
     return {
@@ -130,9 +130,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
     };
   };
 
-  /**
-   * Gets sessions for the selected day
-   */
+ 
   const getDaySessions = (): TimelineSession[] => {
     const daySessions: TimelineSession[] = [];
 
@@ -140,7 +138,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
       const sessionStartDay = time.dayKey(session.startISO);
       const sessionEndDay = time.dayKey(session.endISO);
 
-      // Include session if it starts or ends on selected day
+     
       if (selectedDate === sessionStartDay || selectedDate === sessionEndDay) {
         const positioned = calculateSessionPosition(session, selectedDate);
         if (positioned) {
@@ -158,7 +156,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
 
   const deleteSessionFromStore = useSleepSessionsStore((state) => state.deleteSession);
 
-  // Memoize delete handler to prevent re-renders
+ 
   const deleteSession = useCallback((id: string) => {
     Alert.alert(
       'Delete Session',
@@ -169,7 +167,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            // Store handles deletion and updates all components automatically
+           
             await deleteSessionFromStore(id);
             setSelectedSession(null);
           },
@@ -180,12 +178,11 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
 
 
 
-  // Use hooks for chart data calculations with lazy loading
-  // Only calculate chart data when sessions change significantly
+ 
   const napLengthChartData = useNapLengthChartData(sessions);
   const daytimeSleepChartData = useDaytimeSleepChartData(sessions);
 
-  // Memoize session press handler
+ 
   const handleSessionPress = useCallback((session: SleepSession) => {
     setSelectedSession(session);
   }, []);
@@ -207,7 +204,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
         contentContainerStyle={styles.timelineContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Simple horizontal timeline bar */}
+       
         <Card style={styles.timelineCard}>
           <CText variant="label" style={styles.timelineTitle}>
             Sleep Timeline
@@ -220,7 +217,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
             getQualityColor={getQualityColor}
           />
           
-          {/* Simple color guide */}
+         
           {daySessions.length > 0 && (
             <View style={styles.legend}>
               <View style={styles.legendItem}>
@@ -239,7 +236,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
           )}
         </Card>
 
-        {/* Session list below timeline */}
+       
         <SessionList
           sessions={daySessions}
           highlightSessionIds={safeHighlightIds}
@@ -247,14 +244,14 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
           onSessionDelete={deleteSession}
         />
 
-        {/* Trend Charts - Lazy loaded when visible */}
+       
         {sessions.length > 0 && (napLengthChartData.labels.length > 0 || daytimeSleepChartData.labels.length > 0) && (
           <View style={styles.chartsSection}>
             <CText variant="h3" style={styles.chartsTitle}>
               Sleep Trends
             </CText>
 
-            {/* Average Nap Length Chart */}
+           
             {napLengthChartData.labels.length > 0 && (
               <Card style={styles.chartCard}>
                 <CText variant="label" style={styles.chartTitle}>
@@ -271,7 +268,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
               </Card>
             )}
 
-            {/* Total Daytime Sleep Chart */}
+          
             {daytimeSleepChartData.labels.length > 0 && (
               <Card style={styles.chartCard}>
                 <CText variant="label" style={styles.chartTitle}>
@@ -291,7 +288,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ highlightSession
         )}
       </ScrollView>
 
-      {/* Session Detail Modal */}
+    
       {selectedSession && (
         <View style={styles.modalOverlay}>
           <Card style={styles.detailModal}>

@@ -1,9 +1,3 @@
-/**
- * Error Boundary Component
- * 
- * Catches JavaScript errors anywhere in the child component tree,
- * logs those errors, and displays a fallback UI instead of crashing.
- */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
@@ -43,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console (in production, you'd send to error tracking service)
+
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     this.setState({
@@ -51,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Call optional error handler
+  
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }

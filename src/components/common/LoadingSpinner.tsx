@@ -1,8 +1,3 @@
-/**
- * Loading Spinner Component
- * 
- * Consistent loading indicator used across the application.
- */
 
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';

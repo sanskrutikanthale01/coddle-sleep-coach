@@ -31,20 +31,19 @@ const LineChartComponent: React.FC<LineChartProps> = ({
   const minValue = Math.min(...data, 0);
   const range = maxValue - minValue || 1;
 
-  // Calculate points
   const points = data.map((value, index) => {
     const x = padding + (index / (data.length - 1 || 1)) * graphWidth;
     const y = padding + graphHeight - ((value - minValue) / range) * graphHeight;
     return { x, y, value };
   });
 
-  // Create polyline path
+
   const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
   return (
     <View style={{ alignItems: 'center' }}>
       <Svg width={chartWidth} height={chartHeight}>
-        {/* Grid lines */}
+  
         {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const y = padding + graphHeight - ratio * graphHeight;
           return (
@@ -60,7 +59,7 @@ const LineChartComponent: React.FC<LineChartProps> = ({
           );
         })}
 
-        {/* Y-axis labels */}
+  
         {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
           const value = Math.round(minValue + ratio * range);
           const y = padding + graphHeight - ratio * graphHeight;
@@ -79,7 +78,7 @@ const LineChartComponent: React.FC<LineChartProps> = ({
           );
         })}
 
-        {/* Line */}
+   
         <Polyline
           points={points.map((p) => `${p.x},${p.y}`).join(' ')}
           fill="none"
@@ -87,7 +86,7 @@ const LineChartComponent: React.FC<LineChartProps> = ({
           strokeWidth={3}
         />
 
-        {/* Data points */}
+       
         {points.map((point, index) => (
           <G key={index}>
             <Rect
@@ -101,7 +100,7 @@ const LineChartComponent: React.FC<LineChartProps> = ({
           </G>
         ))}
 
-        {/* X-axis labels */}
+ 
         {labels.map((label, index) => {
           const x = padding + (index / (labels.length - 1 || 1)) * graphWidth;
           return (
@@ -123,20 +122,20 @@ const LineChartComponent: React.FC<LineChartProps> = ({
   );
 };
 
-// Memoize chart component to prevent unnecessary re-renders
+
 export const LineChart = React.memo(LineChartComponent, (prevProps, nextProps) => {
-  // Only re-render if data, labels, or color change
+
   if (prevProps.data.length !== nextProps.data.length) return false;
   if (prevProps.labels.length !== nextProps.labels.length) return false;
   if (prevProps.color !== nextProps.color) return false;
   if (prevProps.height !== nextProps.height) return false;
   
-  // Deep compare data arrays
+ 
   const prevDataStr = prevProps.data.join(',');
   const nextDataStr = nextProps.data.join(',');
   if (prevDataStr !== nextDataStr) return false;
   
-  // Deep compare labels
+ 
   const prevLabelsStr = prevProps.labels.join(',');
   const nextLabelsStr = nextProps.labels.join(',');
   if (prevLabelsStr !== nextLabelsStr) return false;

@@ -28,7 +28,7 @@ import { getKindColor } from '../utils/colors';
 import { EmptyState, LoadingSpinner } from '../components/common';
 
 export const NotificationLogScreen = () => {
-  // Use store for notification history (reactive updates)
+  
   const history = useNotificationStore((state) => state.history);
   const isLoading = useNotificationStore((state) => state.isLoading);
   const loadHistory = useNotificationStore((state) => state.loadHistory);
@@ -46,10 +46,10 @@ export const NotificationLogScreen = () => {
   const loadNotifications = async () => {
     setRefreshing(true);
     try {
-      // Load currently scheduled notifications (from expo-notifications)
+    
       const scheduled = await getAllScheduledNotifications();
       
-      // Sort scheduled by trigger date (soonest first)
+    
       scheduled.sort((a, b) => {
         const dateA = a.trigger && 'date' in a.trigger && a.trigger.date ? new Date(a.trigger.date).getTime() : 0;
         const dateB = b.trigger && 'date' in b.trigger && b.trigger.date ? new Date(b.trigger.date).getTime() : 0;
@@ -58,7 +58,7 @@ export const NotificationLogScreen = () => {
       
       setScheduledNotifications(scheduled);
       
-      // Load history from store
+    
       await loadHistory();
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -67,7 +67,7 @@ export const NotificationLogScreen = () => {
     }
   };
 
-  // Memoize handlers to prevent re-renders
+ 
   const handleRefresh = useCallback(() => {
     loadNotifications();
   }, [loadNotifications]);
@@ -107,7 +107,7 @@ export const NotificationLogScreen = () => {
             return date < new Date();
           }
         } catch (error) {
-          // Silently handle parsing errors
+       
         }
       }
     }
@@ -138,22 +138,20 @@ export const NotificationLogScreen = () => {
             }
           }
         } catch (error) {
-          // Silently handle parsing errors
+         
         }
       }
     }
     return '';
   };
 
-  // Use store selectors for filtered notifications (reactive updates)
+  
   const upcomingFromHistory = getUpcomingNotifications();
   const sentNotifications = getSentNotifications();
   const canceledNotifications = getCanceledNotifications();
-  
-  // Separate scheduled notifications (from expo) and upcoming from history
+
   const upcomingScheduled = scheduledNotifications.filter((n) => !isPast(n));
 
-  // Unified list item type for FlatList
   type ListItem = 
     | { type: 'section'; title: string; count: number }
     | { type: 'scheduled'; notification: Notifications.NotificationRequest }
@@ -161,7 +159,7 @@ export const NotificationLogScreen = () => {
     | { type: 'sent'; item: typeof sentNotifications[0] }
     | { type: 'canceled'; item: typeof canceledNotifications[0] };
 
-  // Memoize list data for FlatList
+
   const listData = useMemo<ListItem[]>(() => {
     const items: ListItem[] = [];
     
@@ -196,7 +194,6 @@ export const NotificationLogScreen = () => {
     return items;
   }, [upcomingScheduled, upcomingFromHistory, sentNotifications, canceledNotifications]);
 
-  // Memoize render functions
   const renderScheduledItem = useCallback((notification: Notifications.NotificationRequest) => {
     const kind = getNotificationKind(notification);
     const kindColor = getKindColor(kind);
@@ -333,7 +330,7 @@ export const NotificationLogScreen = () => {
     );
   }, []);
 
-  // Main render item function for FlatList
+
   const renderItem: ListRenderItem<ListItem> = useCallback(({ item }) => {
     if (item.type === 'section') {
       return (
@@ -364,7 +361,7 @@ export const NotificationLogScreen = () => {
     return null;
   }, [renderScheduledItem, renderUpcomingItem, renderSentItem, renderCanceledItem]);
 
-  // Key extractor for FlatList
+  
   const keyExtractor = useCallback((item: ListItem, index: number) => {
     if (item.type === 'section') {
       return `section-${item.title}`;

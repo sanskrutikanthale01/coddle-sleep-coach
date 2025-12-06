@@ -10,11 +10,7 @@ import { useLearnerStore } from '../stores/learnerStore';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { TEST_BABY_PROFILE } from '../utils/testScheduler';
 
-/**
- * Hook to automatically sync stores when sessions change
- * - Updates learner state when sessions change
- * - Regenerates schedule when sessions or learner state changes
- */
+
 export function useStoreSync() {
   const sessions = useSleepSessionsStore((state) => state.sessions);
   const learnerState = useLearnerStore((state) => state.learnerState);
@@ -22,7 +18,6 @@ export function useStoreSync() {
   const updateLearnerState = useLearnerStore((state) => state.updateLearnerState);
   const generateSchedule = useScheduleStore((state) => state.generateSchedule);
 
-  // Sync learner state when sessions change
   useEffect(() => {
     const activeSessions = sessions.filter((s) => !s.deleted);
     if (activeSessions.length > 0) {
@@ -31,7 +26,7 @@ export function useStoreSync() {
     }
   }, [sessions, babyProfile, updateLearnerState]);
 
-  // Regenerate schedule when learner state or sessions change
+  
   useEffect(() => {
     const activeSessions = sessions.filter((s) => !s.deleted);
     if (activeSessions.length > 0) {

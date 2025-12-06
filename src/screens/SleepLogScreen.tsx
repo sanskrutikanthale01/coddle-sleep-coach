@@ -23,7 +23,7 @@ import { TimerCard, ManualEntryModal } from '../components/sleep';
 import { formatDateHeader } from '../utils/formatters';
 
 export const SleepLogScreen = () => {
-  // Use store for sessions instead of local state
+  
   const sessions = useSleepSessionsStore((state) => state.sessions);
   const isLoading = useSleepSessionsStore((state) => state.isLoading);
   const error = useSleepSessionsStore((state) => state.error);
@@ -37,13 +37,12 @@ export const SleepLogScreen = () => {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [showAllSessions, setShowAllSessions] = useState(false);
 
-  // Load sessions on mount (store handles loading state)
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
 
 
-  // Timer interval
+ 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isTimerRunning && timerStart) {
@@ -58,7 +57,7 @@ export const SleepLogScreen = () => {
     };
   }, [isTimerRunning, timerStart]);
 
-  // Show error if store has error
+  
   useEffect(() => {
     if (error) {
       Alert.alert('Error', error);
@@ -123,11 +122,10 @@ export const SleepLogScreen = () => {
   };
 
   const saveSession = async (session: SleepSession) => {
-    // Store handles saving and updating all components automatically
+   
     await addSession(session);
   };
 
-  // Memoize delete handler to prevent re-renders
   const handleDeleteSession = useCallback((id: string) => {
     Alert.alert(
       'Delete Session',
@@ -138,7 +136,7 @@ export const SleepLogScreen = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            // Store handles deletion and updates all components automatically
+           
             await deleteSession(id);
           },
         },
@@ -147,19 +145,19 @@ export const SleepLogScreen = () => {
   }, [deleteSession]);
 
 
-  // Filter sessions in component with useMemo to avoid infinite loops
+ 
   const activeSessions = React.useMemo(
     () => sessions.filter((s) => !s.deleted),
     [sessions]
   );
 
-  // Filter today's sessions with useMemo
+ 
   const todaySessions = React.useMemo(() => {
     const today = time.dayKey(time.nowISO());
     return activeSessions.filter((s) => time.dayKey(s.startISO) === today);
   }, [activeSessions]);
 
-  // Memoize grouped sessions by date
+ 
   const { sessionsByDate, sortedDateKeys } = useMemo(() => {
     const grouped = activeSessions.reduce((acc, session) => {
       const dateKey = time.dayKey(session.startISO);
@@ -174,7 +172,7 @@ export const SleepLogScreen = () => {
     return { sessionsByDate: grouped, sortedDateKeys: sorted };
   }, [activeSessions]);
 
-  // Memoize render functions for FlatList
+ 
   const renderSessionItem: ListRenderItem<SleepSession> = useCallback(
     ({ item }) => (
       <SessionCard
@@ -232,7 +230,7 @@ export const SleepLogScreen = () => {
           <CText variant="bodySmall">Track your baby&apos;s sleep patterns</CText>
         </View>
 
-        {/* Timer Card */}
+       
         <TimerCard
           isRunning={isTimerRunning}
           elapsedSeconds={elapsedSeconds}
@@ -240,7 +238,7 @@ export const SleepLogScreen = () => {
           onStop={stopTimer}
         />
 
-        {/* Manual Entry Button */}
+       
         <PrimaryButton
           label="Add Manual Entry"
           onPress={() => setShowManualEntry(true)}
@@ -248,7 +246,7 @@ export const SleepLogScreen = () => {
           style={styles.manualButton}
         />
 
-        {/* Sessions Section */}
+       
         <View style={styles.sessionsSection}>
           <View style={styles.sectionHeader}>
             <CText variant="h3" style={styles.sectionTitle}>
@@ -275,7 +273,7 @@ export const SleepLogScreen = () => {
               }}
             />
           ) : showAllSessions ? (
-            // Show all sessions grouped by date - use FlatList for performance
+           
             <FlatList
               data={sortedDateKeys}
               renderItem={({ item: dateKey }) => renderDateGroup(dateKey)}
@@ -291,7 +289,7 @@ export const SleepLogScreen = () => {
               variant="compact"
             />
           ) : (
-            // Show only today's sessions - use FlatList for performance
+           
             <FlatList
               data={todaySessions.sort((a, b) => time.parse(b.startISO).diff(time.parse(a.startISO)))}
               renderItem={renderSessionItem}
@@ -305,7 +303,7 @@ export const SleepLogScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Manual Entry Modal */}
+     
       <ManualEntryModal
         visible={showManualEntry}
         onClose={() => setShowManualEntry(false)}

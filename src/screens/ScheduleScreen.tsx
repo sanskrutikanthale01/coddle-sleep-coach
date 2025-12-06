@@ -25,7 +25,7 @@ import { getBlockIcon } from '../utils/icons';
 import { LoadingSpinner } from '../components/common';
 
 export const ScheduleScreen = () => {
-  // Use stores for schedule data (reactive updates)
+ 
   const todayBlocks = useScheduleStore((state) => state.todayBlocks);
   const tomorrowBlocks = useScheduleStore((state) => state.tomorrowBlocks);
   const whatIfAdjustment = useScheduleStore((state) => state.whatIfAdjustment);
@@ -37,12 +37,11 @@ export const ScheduleScreen = () => {
 
   const [sliderValue, setSliderValue] = useState(0);
 
-  // Load schedule on mount
   useEffect(() => {
     generateSchedule(TEST_BABY_PROFILE);
   }, [generateSchedule]);
 
-  // Schedule notifications when schedule changes (only if not what-if mode)
+
   useEffect(() => {
     if (!isWhatIfMode && todayBlocks.length > 0) {
       const allBlocks = [...todayBlocks, ...tomorrowBlocks];
@@ -90,7 +89,7 @@ export const ScheduleScreen = () => {
     []
   );
 
-  // Memoize key extractor
+ 
   const blockKeyExtractor = useCallback((block: ScheduleBlock, index: number) => {
     return block.id || `block-${index}`;
   }, []);
@@ -101,13 +100,13 @@ export const ScheduleScreen = () => {
     const percentage = Math.max(0, Math.min(1, locationX / sliderWidth));
     const value = Math.round((percentage * 60) - 30); // -30 to +30
     setSliderValue(value);
-    // Generate what-if schedule with adjustment
+ 
     generateWhatIfSchedule(value, TEST_BABY_PROFILE);
   };
 
   const handleResetWhatIf = () => {
     setSliderValue(0);
-    resetWhatIf(); // Store handles reset and regenerates normal schedule
+    resetWhatIf(); 
   };
 
   if (isLoading) {
@@ -128,7 +127,7 @@ export const ScheduleScreen = () => {
           </CText>
         </View>
 
-        {/* What-If Slider */}
+    
         <Card style={styles.whatIfCard}>
           <View style={styles.whatIfHeader}>
             <CText variant="h3" style={styles.whatIfTitle}>

@@ -24,12 +24,12 @@ const SessionListComponent: React.FC<SessionListProps> = ({
   onSessionPress,
   onSessionDelete,
 }) => {
-  // Memoize highlighted IDs set for O(1) lookup
+
   const highlightSet = useMemo(() => {
     return new Set(Array.isArray(highlightSessionIds) ? highlightSessionIds : []);
   }, [highlightSessionIds]);
 
-  // Transform sessions to items with highlight status
+ 
   const sessionItems = useMemo<SessionItem[]>(() => {
     return sessions.map((session) => ({
       session,
@@ -37,7 +37,7 @@ const SessionListComponent: React.FC<SessionListProps> = ({
     }));
   }, [sessions, highlightSet]);
 
-  // Memoize render item function
+  
   const renderItem: ListRenderItem<SessionItem> = useCallback(
     ({ item }) => {
       return (
@@ -52,10 +52,10 @@ const SessionListComponent: React.FC<SessionListProps> = ({
     [onSessionPress, onSessionDelete]
   );
 
-  // Memoize key extractor
+
   const keyExtractor = useCallback((item: SessionItem) => item.session.id, []);
 
-  // Memoize list header
+
   const ListHeaderComponent = useMemo(
     () => (
       <CText variant="h3" style={styles.title}>
@@ -102,13 +102,13 @@ const styles = StyleSheet.create({
   },
 });
 
-// Memoize component to prevent unnecessary re-renders
+
 export const SessionList = React.memo(SessionListComponent, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if sessions or highlights change
+ 
   if (prevProps.sessions.length !== nextProps.sessions.length) return false;
   if (prevProps.highlightSessionIds?.length !== nextProps.highlightSessionIds?.length) return false;
   
-  // Check if session IDs changed
+
   const prevIds = prevProps.sessions.map(s => s.id).join(',');
   const nextIds = nextProps.sessions.map(s => s.id).join(',');
   if (prevIds !== nextIds) return false;

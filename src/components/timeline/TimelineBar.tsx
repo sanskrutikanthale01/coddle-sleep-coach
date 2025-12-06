@@ -31,13 +31,12 @@ const TimelineBarComponent: React.FC<TimelineBarProps> = ({
 }) => {
   const isToday = selectedDate === time.dayKey(time.nowISO());
   const hourMarkers: React.ReactElement[] = [];
-  
-  // Show major hours: 12 AM, 6 AM, 12 PM, 6 PM
+ 
   const majorHours = [0, 6, 12, 18, 24];
   
   majorHours.forEach((hour) => {
     const leftPercent = (hour / 24) * 100;
-    // Calculate margin to center the marker (marker is ~30px wide, so -15px centers it)
+
     const marginLeft = hour === 0 ? 0 : hour === 24 ? -30 : -15;
     
     hourMarkers.push(
@@ -61,13 +60,12 @@ const TimelineBarComponent: React.FC<TimelineBarProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Background bar */}
+
       <View style={styles.background} />
       
-      {/* Hour markers */}
+    
       {hourMarkers}
-      
-      {/* Session blocks */}
+
       {sessions.map((session) => {
         const color = getSessionColor(session);
         const qualityColor = getQualityColor(session.quality);
@@ -90,14 +88,14 @@ const TimelineBarComponent: React.FC<TimelineBarProps> = ({
         );
       })}
       
-      {/* Current time indicator (only for today) */}
+    
       {isToday && (
         <View
           style={[
             styles.currentTimeIndicator,
             {
               left: `${((time.now().hour() * 60 + time.now().minute()) / (24 * 60)) * 100}%`,
-              marginLeft: -7, // Center the indicator
+              marginLeft: -7,
             },
           ]}
         >
@@ -168,16 +166,15 @@ const styles = StyleSheet.create({
   },
 });
 
-// Memoize component to prevent unnecessary re-renders
 export const TimelineBar = React.memo(TimelineBarComponent, (prevProps, nextProps) => {
-  // Only re-render if sessions, date, or color functions change
+  
   if (prevProps.selectedDate !== nextProps.selectedDate) return false;
   if (prevProps.sessions.length !== nextProps.sessions.length) return false;
   if (prevProps.getSessionColor !== nextProps.getSessionColor) return false;
   if (prevProps.getQualityColor !== nextProps.getQualityColor) return false;
   if (prevProps.onSessionPress !== nextProps.onSessionPress) return false;
   
-  // Check if session IDs changed
+
   const prevIds = prevProps.sessions.map(s => s.id).join(',');
   const nextIds = nextProps.sessions.map(s => s.id).join(',');
   if (prevIds !== nextIds) return false;

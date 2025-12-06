@@ -14,22 +14,15 @@ import {
 } from '../config/constants';
 
 interface WakeWindow {
-  /** Wake window duration in minutes */
   durationMin: number;
-  /** Timestamp when wake window ended (start of sleep) */
   endISO: string;
-  /** Age in months when this wake window occurred */
   ageMonths: number;
 }
 
 interface NapInfo {
-  /** Nap duration in minutes */
   durationMin: number;
-  /** Timestamp when nap started */
   startISO: string;
-  /** Age in months when this nap occurred */
   ageMonths: number;
-  /** Quality rating if available */
   quality?: number;
 }
 
@@ -39,7 +32,6 @@ function extractWakeWindows(
 ): WakeWindow[] {
   const wakeWindows: WakeWindow[] = [];
   
-  // Sort sessions by start time
   const sortedSessions = [...sessions].sort((a, b) =>
     time.parse(a.startISO).diff(time.parse(b.startISO))
   );
@@ -48,14 +40,11 @@ function extractWakeWindows(
     const prevSession = sortedSessions[i - 1];
     const currentSession = sortedSessions[i];
 
-    // Calculate wake window: time from end of previous to start of current
     const wakeWindowMin = time.durationMinutes(
       prevSession.endISO,
       currentSession.startISO
     );
 
-    // Only consider reasonable wake windows (15 minutes to 8 hours)
-    // This filters out night sleep gaps
     if (wakeWindowMin >= 15 && wakeWindowMin <= 480) {
       const ageMonths = calculateAgeMonths(
         birthDateISO,
@@ -83,9 +72,6 @@ function extractNaps(
     const start = time.parse(session.startISO);
     const durationMin = time.durationMinutes(session.startISO, session.endISO);
 
-    // Consider it a nap if:
-    // 1. Duration is less than 4 hours (240 minutes)
-    // 2. Starts between 6 AM and 8 PM (daytime)
     const hour = start.hour();
     const isDaytime = hour >= 6 && hour < 20;
 
@@ -113,13 +99,10 @@ function calculateEWMA(
     return previousEWMA ?? 0;
   }
 
-  // If we have a previous EWMA, use incremental update
   if (previousEWMA !== null && values.length === 1) {
     return EWMA_ALPHA * values[0] + (1 - EWMA_ALPHA) * previousEWMA;
   }
 
-  // Otherwise, calculate weighted average
-  // Apply recency weights if provided
   let weightedSum = 0;
   let totalWeight = 0;
 
@@ -136,7 +119,6 @@ function calculateEWMA(
 
   const average = weightedSum / totalWeight;
 
-  // If we have previous EWMA, blend it
   if (previousEWMA !== null) {
     return EWMA_ALPHA * average + (1 - EWMA_ALPHA) * previousEWMA;
   }
@@ -150,11 +132,9 @@ function calculateRecencyWeight(sessionISO: string): number {
   const daysAgo = now.diff(sessionDate, 'day');
 
   if (daysAgo > MAX_SESSION_AGE_DAYS) {
-    return 0; // Too old, ignore
+    return 0; 
   }
 
-  // Exponential decay: weight = e^(-days/10)
-  // Sessions from today have weight ~1, sessions from 10 days ago have weight ~0.37
   return Math.exp(-daysAgo / 10);
 }
 
@@ -167,10 +147,9 @@ function calculateConfidence(
   const totalSessions = wakeWindows.length + naps.length;
 
   if (totalSessions < MIN_SESSIONS_FOR_LEARNING) {
-    return 0.1; // Very low confidence with little data
+    return 0.1; 
   }
 
-  // Recency score: average recency weight
   const allSessions = [
     ...wakeWindows.map((w) => w.endISO),
     ...naps.map((n) => n.startISO),
@@ -178,8 +157,7 @@ function calculateConfidence(
   const recencyWeights = allSessions.map(calculateRecencyWeight);
   const avgRecency = recencyWeights.reduce((a, b) => a + b, 0) / recencyWeights.length;
 
-  // Consistency score: inverse of coefficient of variation
-  let consistencyScore = 0.5; // Default moderate consistency
+  let consistencyScore = 0.5; 
 
   if (wakeWindows.length >= 3) {
     const durations = wakeWindows.map((w) => w.durationMin);
@@ -189,14 +167,13 @@ function calculateConfidence(
       durations.length;
     const stdDev = Math.sqrt(variance);
     const coefficientOfVariation = mean > 0 ? stdDev / mean : 1;
-    // Lower CV = higher consistency
+
     consistencyScore = Math.max(0, 1 - coefficientOfVariation);
   }
 
-  // Session count score: more sessions = higher confidence
-  const sessionCountScore = Math.min(1, totalSessions / CONFIDENCE_PARAMS.minSessions);
 
-  // Combine scores
+  const sessionCountScore = Math.min(1, totalSessions / CONFIDENCE_PARAMS.minSessions);
+                  
   const confidence =
     CONFIDENCE_PARAMS.recencyWeight * avgRecency +
     CONFIDENCE_PARAMS.consistencyWeight * consistencyScore +
@@ -210,11 +187,11 @@ export function updateLearner(
   babyProfile: BabyProfile,
   previousState: LearnerState | null
 ): LearnerState {
-  // Filter out deleted sessions
+ 
   const activeSessions = sessions.filter((s) => !s.deleted);
 
   if (activeSessions.length < MIN_SESSIONS_FOR_LEARNING) {
-    // Not enough data, return baseline-based state
+  
     const baseline = getBaselineForBaby(babyProfile.birthDateISO);
     const ageMonths = calculateAgeMonths(babyProfile.birthDateISO);
 
@@ -223,30 +200,24 @@ export function updateLearner(
       ewmaNapLengthMin: baseline.typicalNapLengthMin,
       ewmaWakeWindowMin: baseline.typicalWakeWindowMin,
       lastUpdatedISO: time.nowISO(),
-      confidence: 0.1, // Low confidence with little data
+      confidence: 0.1, 
     };
   }
 
-  // Extract wake windows and naps
   const wakeWindows = extractWakeWindows(activeSessions, babyProfile.birthDateISO);
   const naps = extractNaps(activeSessions, babyProfile.birthDateISO);
 
-  // Get age baseline
   const baseline = getBaselineForBaby(babyProfile.birthDateISO);
   const ageMonths = calculateAgeMonths(babyProfile.birthDateISO);
 
-  // Calculate EWMA for wake windows
   let ewmaWakeWindow: number;
   if (wakeWindows.length === 0) {
-    // No wake windows extracted, use baseline
     ewmaWakeWindow = baseline.typicalWakeWindowMin;
   } else {
-    // Sort by recency (most recent first)
     const sortedWindows = [...wakeWindows].sort((a, b) =>
       time.parse(b.endISO).diff(time.parse(a.endISO))
     );
 
-    // Get recent windows (last 14 days)
     const recentWindows = sortedWindows.filter((w) => {
       const daysAgo = time.now().diff(time.parse(w.endISO), 'day');
       return daysAgo <= 14;
@@ -263,22 +234,17 @@ export function updateLearner(
       previousState?.ewmaWakeWindowMin ?? baseline.typicalWakeWindowMin;
     ewmaWakeWindow = calculateEWMA(windowDurations, previousWakeWindow, recencyWeights);
 
-    // Clamp to age-appropriate bounds
     ewmaWakeWindow = clampWakeWindow(ewmaWakeWindow, ageMonths);
   }
 
-  // Calculate EWMA for nap length
   let ewmaNapLength: number;
   if (naps.length === 0) {
-    // No naps extracted, use baseline
     ewmaNapLength = baseline.typicalNapLengthMin;
   } else {
-    // Sort by recency
     const sortedNaps = [...naps].sort((a, b) =>
       time.parse(b.startISO).diff(time.parse(a.startISO))
     );
 
-    // Get recent naps (last 14 days)
     const recentNaps = sortedNaps.filter((n) => {
       const daysAgo = time.now().diff(time.parse(n.startISO), 'day');
       return daysAgo <= 14;
@@ -295,11 +261,9 @@ export function updateLearner(
       previousState?.ewmaNapLengthMin ?? baseline.typicalNapLengthMin;
     ewmaNapLength = calculateEWMA(napDurations, previousNapLength, recencyWeights);
 
-    // Clamp to age-appropriate bounds
     ewmaNapLength = clampNapLength(ewmaNapLength, ageMonths);
   }
 
-  // Calculate confidence
   const confidence = calculateConfidence(
     wakeWindows,
     naps,
@@ -324,7 +288,6 @@ export function getLearnedWakeWindow(
     return learnerState.ewmaWakeWindowMin;
   }
 
-  // Fall back to baseline
   const baseline = getBaselineForBaby(babyProfile.birthDateISO);
   return baseline.typicalWakeWindowMin;
 }
@@ -337,7 +300,6 @@ export function getLearnedNapLength(
     return learnerState.ewmaNapLengthMin;
   }
 
-  // Fall back to baseline
   const baseline = getBaselineForBaby(babyProfile.birthDateISO);
   return baseline.typicalNapLengthMin;
 }

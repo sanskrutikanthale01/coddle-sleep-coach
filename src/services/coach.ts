@@ -12,14 +12,14 @@ function detectShortNapStreak(
   sessions: SleepSession[],
   babyProfile: BabyProfile
 ): CoachTip | null {
-  // Get recent naps (last 5 days)
+  
   const now = time.now();
   const recentSessions = sessions.filter((s) => {
     const daysAgo = now.diff(time.parse(s.startISO), 'day');
     return daysAgo <= 5 && !s.deleted;
   });
 
-  // Extract naps (daytime sessions <4 hours)
+  
   const naps: SleepSession[] = [];
   for (const session of recentSessions) {
     const start = time.parse(session.startISO);
@@ -32,10 +32,10 @@ function detectShortNapStreak(
     }
   }
 
-  // Sort by start time (most recent first)
+  
   naps.sort((a, b) => time.parse(b.startISO).diff(time.parse(a.startISO)));
 
-  // Check last 5 naps
+  
   const recentNaps = naps.slice(0, 5);
   const shortNaps = recentNaps.filter((nap) => {
     const durationMin = time.durationMinutes(nap.startISO, nap.endISO);
@@ -70,7 +70,7 @@ function detectOvertiredWarning(
   learnerState: LearnerState | null,
   babyProfile: BabyProfile
 ): CoachTip | null {
-  // Get recent sessions (last 7 days)
+  
   const now = time.now();
   const recentSessions = sessions
     .filter((s) => {
@@ -83,11 +83,11 @@ function detectOvertiredWarning(
     return null;
   }
 
-  // Get learned wake window
+  
   const learnedWakeWindow = getLearnedWakeWindow(learnerState, babyProfile);
   const threshold = learnedWakeWindow * COACH_THRESHOLDS.longWakeWindowMultiplier;
 
-  // Calculate wake windows between sessions
+  
   const longWakeWindows: { session: SleepSession; wakeWindowMin: number }[] = [];
 
   for (let i = 1; i < recentSessions.length; i++) {
@@ -96,7 +96,7 @@ function detectOvertiredWarning(
 
     const wakeWindowMin = time.durationMinutes(prevSession.endISO, currentSession.startISO);
 
-    // Only consider reasonable wake windows (15 min to 8 hours)
+    
     if (wakeWindowMin >= 15 && wakeWindowMin <= 480 && wakeWindowMin > threshold) {
       longWakeWindows.push({
         session: currentSession,
@@ -106,7 +106,7 @@ function detectOvertiredWarning(
   }
 
   if (longWakeWindows.length > 0) {
-    // Get the most recent long wake window
+    
     const longest = longWakeWindows.reduce((max, w) =>
       w.wakeWindowMin > max.wakeWindowMin ? w : max
     );
@@ -144,7 +144,7 @@ function detectBedtimeShift(
   learnerState: LearnerState | null,
   babyProfile: BabyProfile
 ): CoachTip | null {
-  // Get recent night sleep sessions (last 3 nights)
+  
   const now = time.now();
   const recentSessions = sessions
     .filter((s) => {
@@ -153,7 +153,7 @@ function detectBedtimeShift(
     })
     .sort((a, b) => time.parse(a.startISO).diff(time.parse(b.startISO)));
 
-  // Extract bedtimes (sessions that start after 6 PM and are >4 hours)
+  
   const bedtimes: { session: SleepSession; bedtimeHour: number; bedtimeMin: number }[] = [];
 
   for (const session of recentSessions) {
@@ -161,7 +161,7 @@ function detectBedtimeShift(
     const durationMin = time.durationMinutes(session.startISO, session.endISO);
     const hour = start.hour();
 
-    // Night sleep: starts after 6 PM and lasts >4 hours
+    
     if (hour >= 18 && durationMin >= 240) {
       bedtimes.push({
         session,
@@ -175,12 +175,11 @@ function detectBedtimeShift(
     return null;
   }
 
-  // Get baseline bedtime (typically 7-8 PM, which is 19:00-20:00)
-  const baseline = getBaselineForBaby(babyProfile.birthDateISO);
-  const typicalBedtimeHour = 19; // 7 PM
-  const bedtimeShiftThreshold = 30; // 30 minutes
 
-  // Calculate average bedtime from recent nights
+  const baseline = getBaselineForBaby(babyProfile.birthDateISO);
+  const typicalBedtimeHour = 19; 
+  const bedtimeShiftThreshold = 30; 
+
   const totalMinutes = bedtimes.reduce(
     (sum, b) => sum + b.bedtimeHour * 60 + b.bedtimeMin,
     0
@@ -217,10 +216,7 @@ function detectBedtimeShift(
   return null;
 }
 
-/**
- * Rule 4: Split Night Warning
- * Detects when night sleep is interrupted (wake period in middle of night)
- */
+
 function detectSplitNight(
   sessions: SleepSession[],
   babyProfile: BabyProfile

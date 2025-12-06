@@ -1,8 +1,3 @@
-/**
- * Date Navigator Component
- * 
- * Reusable component for navigating between dates with prev/next buttons
- */
 
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
@@ -12,7 +7,7 @@ import { time } from '../../utils/time';
 import { coddleTheme } from '../../theme/coddleTheme';
 
 interface DateNavigatorProps {
-  selectedDate: string; // YYYY-MM-DD format
+  selectedDate: string; 
   onDateChange: (dateKey: string) => void;
   onTodayPress?: () => void;
   sessionCount?: number;

@@ -25,12 +25,11 @@ interface CoachScreenProps {
 }
 
 export const CoachScreen: React.FC<CoachScreenProps> = ({ onNavigateToTimeline }) => {
-  // Use stores for sessions and learner state (reactive updates)
+
   const allSessions = useSleepSessionsStore((state) => state.sessions);
   const learnerState = useLearnerStore((state) => state.learnerState);
   const babyProfile = useLearnerStore((state) => state.babyProfile) || TEST_BABY_PROFILE;
 
-  // Filter active sessions with useMemo to avoid infinite loops
   const sessions = React.useMemo(
     () => allSessions.filter((s) => !s.deleted),
     [allSessions]
@@ -39,25 +38,25 @@ export const CoachScreen: React.FC<CoachScreenProps> = ({ onNavigateToTimeline }
   const [tips, setTips] = useState<CoachTip[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Memoize tip generation
+
   const generateTips = useCallback(() => {
     const generatedTips = generateCoachTips(sessions, learnerState, babyProfile);
     setTips(generatedTips);
   }, [sessions, learnerState, babyProfile]);
 
-  // Regenerate tips when sessions or learner state changes
+ 
   useEffect(() => {
     generateTips();
   }, [generateTips]);
 
-  // Memoize refresh handler
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     generateTips();
     setRefreshing(false);
   }, [generateTips]);
 
-  // Memoize timeline navigation handler
+  
   const handleViewOnTimeline = useCallback((tip: CoachTip) => {
     if (onNavigateToTimeline && tip.relatedSessionIds.length > 0) {
       // Navigate to timeline with first related date
@@ -66,7 +65,7 @@ export const CoachScreen: React.FC<CoachScreenProps> = ({ onNavigateToTimeline }
     }
   }, [onNavigateToTimeline]);
 
-  // Memoize render item function for FlatList
+  
   const renderTipItem: ListRenderItem<CoachTip> = useCallback(
     ({ item: tip }) => (
       <Card style={styles.tipCard}>

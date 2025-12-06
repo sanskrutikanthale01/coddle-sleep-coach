@@ -107,20 +107,20 @@ const BarChartComponent: React.FC<BarChartProps> = ({
   );
 };
 
-// Memoize chart component to prevent unnecessary re-renders
+
 export const BarChart = React.memo(BarChartComponent, (prevProps, nextProps) => {
-  // Only re-render if data, labels, or color change
+ 
   if (prevProps.data.length !== nextProps.data.length) return false;
   if (prevProps.labels.length !== nextProps.labels.length) return false;
   if (prevProps.color !== nextProps.color) return false;
   if (prevProps.height !== nextProps.height) return false;
   
-  // Deep compare data arrays
+
   const prevDataStr = prevProps.data.join(',');
   const nextDataStr = nextProps.data.join(',');
   if (prevDataStr !== nextDataStr) return false;
   
-  // Deep compare labels
+
   const prevLabelsStr = prevProps.labels.join(',');
   const nextLabelsStr = nextProps.labels.join(',');
   if (prevLabelsStr !== nextLabelsStr) return false;
