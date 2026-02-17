@@ -10,6 +10,7 @@ import {
 import { useLearnerStore } from './learnerStore';
 import { useScheduleStore } from './scheduleStore';
 import { TEST_BABY_PROFILE } from '../utils/testScheduler';
+import { time } from '../utils/time';
 
 interface SleepSessionsState {
   sessions: SleepSession[];
@@ -143,7 +144,6 @@ export const useSleepSessionsStore = create<SleepSessionsState>((set, get) => ({
 
   getSessionsByDate: (dateKey: string) => {
     const { sessions } = get();
-    const time = require('../utils/time').time;
     return sessions.filter(
       (session) =>
         !session.deleted && time.dayKey(session.startISO) === dateKey
@@ -152,7 +152,6 @@ export const useSleepSessionsStore = create<SleepSessionsState>((set, get) => ({
 
   getTodaySessions: () => {
     const { sessions } = get();
-    const time = require('../utils/time').time;
     const today = time.dayKey(time.nowISO());
     return sessions.filter(
       (session) => !session.deleted && time.dayKey(session.startISO) === today

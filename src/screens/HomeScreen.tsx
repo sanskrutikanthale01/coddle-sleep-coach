@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: coddleTheme.spacing(1),
   },
   lastTileWrapper: {
-    marginLeft: '26%', // Center the last tile if odd number
+    marginLeft: '26%',
   },
   tile: {
     minHeight: 160,

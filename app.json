@@ -12,7 +12,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "yes",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +25,8 @@
       },
       "permissions": [
         "RECEIVE_BOOT_COMPLETED"
-      ]
+      ],
+      "package": "com.sanskruti_15.coddle_app"
     },
     "plugins": [
       [
@@ -35,6 +40,11 @@
     ],
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fbd89750-8c5f-46ac-945c-52fe0c0c9ecd"
+      }
     }
   }
 }
